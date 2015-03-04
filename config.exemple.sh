@@ -5,7 +5,7 @@
 #
 
 # Page vers laquelle rediriger les requêtes
-redirection="/maintenance/maintenance.html"
+redirection="/maintenance/maintenance.page.exemple.php"
 nom_page=$(basename $redirection) # ne pas modifier !
 
 # Liste des dosiiers dans lesquels placer un .htaccess de maintenance
