@@ -10,18 +10,12 @@ nom_page=$(basename $redirection) # ne pas modifier !
 
 # Liste des dosiiers dans lesquels placer un .htaccess de maintenance
 dossiers=(
-"/home/mathias/test"
-'/home/mathias/test/ta mémé.com'
-"/home/mathias/couscous/poulet"
-"/home/mathias/test/dossier1"
-"/home/mathias/test/dossier1/b"
-"/home/mathias/test/dossier1/a/"
+"/var/www/monsite/"
+"/home/user/test"
 )
 
 # Liste des adresses IP qui ne subiront pas la redirection
 adresses=(
 "192.168.0.16"
-"192.168.0.9"
-"192.168.0.6"
 )
 
