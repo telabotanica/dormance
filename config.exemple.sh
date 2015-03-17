@@ -26,7 +26,6 @@ dossiers=(
 "/home/user/www
 	^page:eflore.*$
 	^page:(bdtxa|isfan|apd)$
-	truc test
 	^(bdtfx|bdtxa|bdtre|isfan|apd)[-/:]nn[-/:]([0-9]+)[-/:]([a-z]+)$
 "
 "/home/user/foo/bar/stuff"
