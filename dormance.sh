@@ -11,16 +11,17 @@
 
 # notice d'utilisation
 function notice {
-	echo "Utilisation: $0 off|on [date1] [date2]"
-	echo "- off: passe le site en maintenance"
-	echo "- on: sort le site de la maintenance"
-	echo "- date1: date et heure de début de maintenance, au format '2015-03-04_09:15' (! lire NOTE)"
-	echo "- date2: date et heure de fin de maintenance, au format '2015-03-04_09:15'"
-	echo "NOTE: si seule date1 est fournie, ce sera la date de fin"
+	echo "Utilisation: $0 [-c fichierconfig.sh] off|on [date1] [date2]"
+	echo "   off: passe le site en maintenance"
+	echo "   on: sort le site de la maintenance"
+	echo "   -c fichierconfig.sh: charge la configuration depuis fichierconfig.sh plutôt que config.sh (défaut)"
+	echo "   date1: date et heure de début de maintenance, au format '2015-03-04_09:15' (! lire NOTE)"
+	echo "   date2: date et heure de fin de maintenance, au format '2015-03-04_09:15'"
+	echo "NOTE: si seule date1 est fournie, elle sera considérée comme date de fin"
 }
 
-# chargement de la configuration
-. config.sh
+# fichier de configuration par défaut
+fichier_config="config.sh"
 
 # recherche un 2e et un 3e arguments facultatifs pour transmettre comme
 # dates de début et de fin à la page de maintenance (nécessite une page compatible)
@@ -36,6 +37,31 @@ function lire_parametres_dates {
 		else
 			arguments+="fin=$1"
 		fi
+	fi
+}
+
+# recherche un paramètre "on" ou "off" qui détermine l'action à engager
+# (mise en maintenance du site ou sortie de maintenance)
+function charger_config_et_lire_parametre_on_off {
+	# chargement de la configuration
+	. $fichier_config
+
+	if [ "$1" == "off" ]; then
+		lire_parametres_dates $2 $3
+		maintenance
+	elif [ "$1" == "on" ]; then
+		sortie_maintenance
+	else
+		notice
+	fi
+}
+
+function est_un_tableau {
+	str="`declare -p $1 2>/dev/null`"
+	if [[ "${str:0:10}" == 'declare -a' ]]; then
+		echo array;
+	else
+		echo pas array;
 	fi
 }
 
@@ -65,8 +91,12 @@ function maintenance {
 
 	# parcours des destinations à mettre en maintenance
 	for ((i = 0; i < ${#dossiers[@]}; i++)); do
-		dest="${dossiers[$i]}"
-			if [ -d "$dest" ]; then
+		# tentative de découpage de la règle
+		IFS=$'\n\t' read -d '' -r -a regles <<< "${dossiers[$i]}"
+		nbregles=${#regles[@]}
+		dest=${regles[0]}
+		# traitement de la règle
+		if [ -d "$dest" ]; then
 			echo "+ traitement de $dest"
 			chemin_htaccess="$dest/.htaccess"
 			chemin_htaccess_maintenance="$dest/htaccess.maintenance"
@@ -100,7 +130,10 @@ function sortie_maintenance {
 	echo "Sortie de maintenance"
 	# parcours des destinations à sortir de la maintenance
 	for ((i = 0; i < ${#dossiers[@]}; i++)); do
-		dest="${dossiers[$i]}"
+		# récupération du dossier de la règle
+		IFS=$'\n\t' read -d '' -r -a regles <<< "${dossiers[$i]}"
+		dest=${regles[0]}
+		# traitement de la règle
 		if [ -d "$dest" ]; then
 			echo "+ traitement de $dest"
 			chemin_htaccess="$dest/.htaccess"
@@ -127,14 +160,21 @@ function sortie_maintenance {
 	done
 }
 
-# option de la ligne de commande : "on" ou "off"
-if [ "$1" == "off" ]; then
-	lire_parametres_dates $2 $3
-	maintenance
-elif [ "$1" == "on" ]; then
-	sortie_maintenance
+# recherche l'option facultative de la ligne de commande : -c nomfichierconfig
+# @TODO utiliser getopts si besoin de nouveaux paramètres facultatifs
+if [ "$1" == "-c" ]; then
+	if [ "$2" != "" ]; then
+		fichier_config=$2
+		if [ -e "$fichier_config" ]; then
+			charger_config_et_lire_parametre_on_off $3 $4 $5
+		else
+			echo "Fichier de configuration introuvable : $fichier_config"
+		fi
+	else
+		notice
+		exit 1
+	fi
 else
-	notice
-	exit 1
+	charger_config_et_lire_parametre_on_off "$@"
 fi
 
