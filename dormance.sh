@@ -14,7 +14,7 @@ function notice {
 	echo "Utilisation: $0 [-c fichierconfig.sh] off|on [date1] [date2]"
 	echo "   off: passe le site en maintenance"
 	echo "   on: sort le site de la maintenance"
-	echo "   -c fichierconfig.sh: charge la configuration depuis fichierconfig.sh plutôt que config.sh (défaut)"
+	echo "   -c fichierconfig: charge la configuration depuis fichierconfig plutôt que config.sh (défaut)"
 	echo "   date1: date et heure de début de maintenance, au format '2015-03-04_09:15' (! lire NOTE)"
 	echo "   date2: date et heure de fin de maintenance, au format '2015-03-04_09:15'"
 	echo "NOTE: si seule date1 est fournie, elle sera considérée comme date de fin"

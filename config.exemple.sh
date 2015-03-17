@@ -15,7 +15,7 @@ adresses=(
 "192.168.0.6"
 )
 
-# Liste des dosiiers dans lesquels placer un .htaccess de maintenance
+# Liste des dossiers dans lesquels placer un .htaccess de maintenance
 # Les dossiers à traiter sont encadrés par des ""
 # Pour n'affecter que certaines règles de redirection précises, revenir
 #	à la ligne (\n), indenter d'une tabulation (\t) et ajouter la règle (syntaxe mod_rewrite)
