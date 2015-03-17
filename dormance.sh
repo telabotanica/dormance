@@ -56,18 +56,9 @@ function charger_config_et_lire_parametre_on_off {
 	fi
 }
 
-function est_un_tableau {
-	str="`declare -p $1 2>/dev/null`"
-	if [[ "${str:0:10}" == 'declare -a' ]]; then
-		echo array;
-	else
-		echo pas array;
-	fi
-}
-
-# génère le contenu d'un fichier .htaccess en fonction de la configuration
-function generer_htaccess {
-	htaccess="# DORMANCE
+# base du fichier .htaccess
+function generer_htaccess_base {
+	htaccess_base="# DORMANCE
 RewriteEngine on
 RewriteCond %{REQUEST_URI} !$nom_page
 RewriteCond %{REQUEST_FILENAME} !(css|img).+$
@@ -75,19 +66,44 @@ RewriteCond %{REQUEST_FILENAME} !(.*png|.*jpg)$"
 	for adr in "${adresses[@]}"; do
 		# remplacement de tous les . par \.
 		adr=${adr//./\\.}
-		htaccess+=$'\n'
-		htaccess+="RewriteCond %{REMOTE_ADDR} !^$adr$"
+		htaccess_base+=$'\n'
+		htaccess_base+="RewriteCond %{REMOTE_ADDR} !^$adr$"
 	done
+}
+
+# génère le contenu d'un fichier .htaccess en fonction de la configuration,
+# avec une redirection pour tout le dossier
+function generer_htaccess_simple {
+	htaccess=$htaccess_base
 	# gestion des dates de maintenance (nécessite une page compatible)
 	htaccess+=$'\n'
-	htaccess+="RewriteRule (.*) $redirection$arguments [R=302,L]"
+	htaccess+="RewriteRule (.*) $redirection$arguments [L]"
+}
+
+# génère le contenu d'un fichier .htaccess en fonction de la configuration,
+# avec des règles spécifiques qui se superposent ou s'ajoutent à d'éventuelles
+# règles existantes
+function generer_htaccess_regles {
+	htaccess=$htaccess_base
+	# parcours des règles fines pour ce .htaccess
+	for ((j = 1; j < ${#regles[@]}; j++)); do
+		regle=${regles[$j]}
+		htaccess+=$'\n'
+		htaccess+="RewriteRule $regle $redirection$arguments [L]"
+	done
+	htaccess+=$'\n'
+	# si un fichier .htaccess existait déjà
+	if [ -e "$chemin_htaccess_maintenance" ]; then
+		htaccess+=$'\n'
+		htaccess+=`cat "$chemin_htaccess_maintenance"`
+	fi
 }
 
 # Mise en maintenance
 function maintenance {
 	echo "Mise en maintenance"
-	# génération du contenu du .htaccess de maintenance
-	generer_htaccess
+	# génération du contenu de base des futurs .htaccess
+	generer_htaccess_base
 
 	# parcours des destinations à mettre en maintenance
 	for ((i = 0; i < ${#dossiers[@]}; i++)); do
@@ -115,6 +131,13 @@ function maintenance {
 				fi
 			fi
 			# dans tous les cas on met à jour le fichier .htaccess
+			if [ $nbregles == 1 ]; then
+				# génération du contenu du .htaccess de maintenance
+				generer_htaccess_simple
+			else
+				# génération du contenu du .htaccess de maintenance en fonction de l'existant
+				generer_htaccess_regles
+			fi
 			echo "   écriture du .htaccess"
 			echo "$htaccess" > "$chemin_htaccess"
 		else
