@@ -30,9 +30,7 @@ function lire_parametres_dates {
 	arguments=""
 	if [ -n "$1" ]; then
 		arguments+="?"
-		echo "arg1 vaut $1"
 		if [ -n "$2" ]; then
-			echo "arg2 vaut $2"
 			arguments+="debut=$1&fin=$2"
 		else
 			arguments+="fin=$1"
