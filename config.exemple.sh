@@ -6,7 +6,6 @@
 
 # Page vers laquelle rediriger les requêtes
 redirection="/maintenance/maintenance.php"
-nom_page=$(basename $redirection) # ne pas modifier !
 
 # Liste des adresses IP qui ne subiront pas la redirection
 adresses=(
