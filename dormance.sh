@@ -56,11 +56,12 @@ function charger_config_et_lire_parametre_on_off {
 
 # base du fichier .htaccess
 function generer_htaccess_base {
+	nom_page=$(basename $redirection)
+
 	htaccess_base="# DORMANCE
 RewriteEngine on
 RewriteCond %{REQUEST_URI} !$nom_page
-RewriteCond %{REQUEST_FILENAME} !(css|img).+$
-RewriteCond %{REQUEST_FILENAME} !(.*png|.*jpg)$"
+RewriteCond %{REQUEST_FILENAME} !\.(png|jpe?g|css|js)$"
 	for adr in "${adresses[@]}"; do
 		# remplacement de tous les . par \.
 		adr=${adr//./\\.}
@@ -75,7 +76,7 @@ function generer_htaccess_simple {
 	htaccess=$htaccess_base
 	# gestion des dates de maintenance (nécessite une page compatible)
 	htaccess+=$'\n'
-	htaccess+="RewriteRule (.*) $redirection$arguments [L]"
+	htaccess+="RewriteRule (.*) $redirection$arguments [QSD,L,R=302]"
 }
 
 # génère le contenu d'un fichier .htaccess en fonction de la configuration,
@@ -87,7 +88,7 @@ function generer_htaccess_regles {
 	for ((j = 1; j < ${#regles[@]}; j++)); do
 		regle=${regles[$j]}
 		htaccess+=$'\n'
-		htaccess+="RewriteRule $regle $redirection$arguments [L]"
+		htaccess+="RewriteRule $regle $redirection$arguments [QSD,L,R=302]"
 	done
 	htaccess+=$'\n'
 	# si un fichier .htaccess existait déjà
